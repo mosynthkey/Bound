@@ -6,3 +6,4 @@
 - その中でgit clone https://github.com/mosynthkey/Bound.git
 - JUCE/projects/Builds/MacOSX/Bound.xcodeprojを開く
 - ビルド通るかな？
+- test
