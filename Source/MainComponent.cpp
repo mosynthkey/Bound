@@ -73,6 +73,7 @@ MainComponent::MainComponent()
     
     board = new Board();
     /*
+    //Track1. BD color rgb(255, 255, 255)
     {
         Ball ball;
         ball.px = 5.f;
@@ -80,47 +81,68 @@ MainComponent::MainComponent()
         ball.vx = 1.0f;
         ball.vy = 0.5f;
         ball.r = 255.f;
-        ball.g = ball.b = 0.f;
+        ball.g = 255.f;
+        ball.b = 255.f;
         ball.noteNum = 0;
         board->addBall(ball);
     }
     
+    //Track2. SN color rgb(243, 156, 18)
     {
         Ball ball;
         ball.px = 3.f;
         ball.py = 8.f;
         ball.vx = 1.f;
         ball.vy = -2.f;
-        ball.b = 255.f;
-        ball.r = ball.g = 0.f;
+        ball.r = 243.f;
+        ball.g = 156.f;
+        ball.b = 18.f;
         ball.noteNum = 1;
         board->addBall(ball);
     }
-    
+      
+    //Track3. HH color rgb(52, 152, 219)
     {
         Ball ball;
         ball.px = 2.f;
         ball.py = 2.f;
         ball.vx = 1.f;
         ball.vy = 1.f;
-        ball.b = 255.f;
-        ball.r = ball.g = 0.f;
+        ball.r = 52.f;
+        ball.g = 152.f;
+        ball.b = 219.f;
         ball.noteNum = 2;
         board->addBall(ball);
     }
     
+    //Track4. Ba color rgb(46, 204, 113)
     {
         Ball ball;
         ball.px = 7.f;
         ball.py = 4.f;
         ball.vx = 2.f;
         ball.vy = -1.f;
-        ball.b = 255.f;
-        ball.r = ball.g = 0.f;
+        ball.r = 46.f;
+        ball.g = 204.f;
+        ball.b = 113.f;
         ball.noteNum = 5;
         board->addBall(ball);
     }
-    */
+    //Track. Seq color rgb(155, 89, 182)
+    {
+        Ball ball;
+        ball.px = 7.f;
+        ball.py = 4.f;
+        ball.vx = 2.f;
+        ball.vy = -1.f;
+        ball.r = 155.f;
+        ball.g = 89.f;
+        ball.b = 182.f;
+        ball.noteNum = 5;
+        board->addBall(ball);
+    }
+     */
+    
     startTimer(100);
     
     // midi
@@ -515,47 +537,105 @@ void MainComponent::drawLED (uint32 x0, uint32 y0, float z, Colour drawColour)
 
 void MainComponent::redrawLEDs(){
     if (auto* canvasProgram = getCanvasProgram()){
-        for (int y = 0; y < 15; y++){
-            for (int x = 0; x < 15; x++){
-                //canvasProgram->setLED(x, y, Colour(155/3, 40/3, 200/3));
-            }
-         }
-        
-        
-        for (int y = 0; y < BLOCKS_SIZE; y++)
-        {
-            for (int x = 0; x < BLOCKS_SIZE; x++)
-            {
-                BoardState state = board->getBoardState(x, y);
+        for (int y = 0; y < BLOCKS_SIZE; y++){
+            for (int x = 0; x < BLOCKS_SIZE; x++){
+                //ボール等描画前にキャンバスの下地をリセット
+                canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
                 //LEDを減衰
-                stateLED[x][y].r = stateLED[x][y].r/2 ;
-                stateLED[x][y].g = stateLED[x][y].g/2 ;
-                stateLED[x][y].b = stateLED[x][y].b/2 ;
+                stateLED[x][y].r = stateLED[x][y].r*LEDDECAY ;
+                stateLED[x][y].g = stateLED[x][y].g*LEDDECAY ;
+                stateLED[x][y].b = stateLED[x][y].b*LEDDECAY ;
+            }
+        }
+        for (int y = 0; y < BLOCKS_SIZE; y++){
+            for (int x = 0; x < BLOCKS_SIZE; x++){
+                //壁を塗る
+                if( ((x == 0)||(x == BLOCKS_SIZE -1)) || ((y == 0)||(y == BLOCKS_SIZE -1)) ){
+                    //canvasProgram->setLED(x, y, Colour(255/4, 255/4, 255/4));
+                }
+                BoardState state = board->getBoardState(x, y);
                 switch (state.c)
                 {
                     case Charactor_Wall:
-                        canvasProgram->setLED(x, y, Colour(255/4, 255/4, 255/4));
+                        //canvasProgram->setLED(x, y, Colour(255/4, 255/4, 255/4));
                         break;
                         
                     case Charactor_Ball:
-                        stateLED[x][y].r = state.r;
-                        stateLED[x][y].g = state.g;
-                        stateLED[x][y].b = state.b;
+                    {
+                        stateLED[x][y].r = state.r;//stateLED[x][y].r + state.r;
+                        stateLED[x][y].g = state.g;//stateLED[x][y].g + state.g;
+                        stateLED[x][y].b = state.b;//stateLED[x][y].b + state.b;
                         canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
-                        /*canvasProgram->setLED(x, y, Colour(state.r, state.g, state.b));
-                        canvasProgram->setLED(x-1, y, Colour(state.r/4, state.g/4, state.b/4));
-                        canvasProgram->setLED(x+1, y, Colour(state.r/4, state.g/4, state.b/4));
-                        canvasProgram->setLED(x, y-1, Colour(state.r/4, state.g/4, state.b/4));
-                        canvasProgram->setLED(x, y+1, Colour(state.r/4, state.g/4, state.b/4));
-                        */break;
                         
+                        //壁ピンク化チンパンコード
+                        if( (x <= 1)){
+                            stateLED[x-1][y].r = state.r;
+                            stateLED[x-1][y].g = state.g;
+                            stateLED[x-1][y].b = state.b;
+                            
+                            stateLED[x-1][y+1].r = state.r;
+                            stateLED[x-1][y+1].g = state.g;
+                            stateLED[x-1][y+1].b = state.b;
+                            
+                            stateLED[x-1][y-1].r = state.r;
+                            stateLED[x-1][y-1].g = state.g;
+                            stateLED[x-1][y-1].b = state.b;
+                        }
+                        if(x>= BLOCKS_SIZE-2){
+                            stateLED[x+1][y].r = state.r;
+                            stateLED[x+1][y].g = state.g;
+                            stateLED[x+1][y].b = state.b;
+                            
+                            stateLED[x+1][y+1].r = state.r;
+                            stateLED[x+1][y+1].g = state.g;
+                            stateLED[x+1][y+1].b = state.b;
+                            
+                            stateLED[x+1][y-1].r = state.r;
+                            stateLED[x+1][y-1].g = state.g;
+                            stateLED[x+1][y-1].b = state.b;
+                        }
+                        if( (y <= 1)){
+                            stateLED[x][y-1].r = state.r;
+                            stateLED[x][y-1].g = state.g;
+                            stateLED[x][y-1].b = state.b;
+                            
+                            stateLED[x+1][y-1].r = state.r;
+                            stateLED[x+1][y-1].g = state.g;
+                            stateLED[x+1][y-1].b = state.b;
+                            
+                            stateLED[x-1][y-1].r = state.r;
+                            stateLED[x-1][y-1].g = state.g;
+                            stateLED[x-1][y-1].b = state.b;
+                        }
+                        if(y>=BLOCKS_SIZE-2){
+                            stateLED[x][y+1].r = state.r;
+                            stateLED[x][y+1].g = state.g;
+                            stateLED[x][y+1].b = state.b;
+                            
+                            stateLED[x+1][y+1].r = state.r;
+                            stateLED[x+1][y+1].g = state.g;
+                            stateLED[x+1][y+1].b = state.b;
+                            
+                            stateLED[x-1][y+1].r = state.r;
+                            stateLED[x-1][y+1].g = state.g;
+                            stateLED[x-1][y+1].b = state.b;
+                            //std::cout << "yyy" << y << std::endl;
+                        }
+                        break;
+                    }
                     default:
-                        canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
-                        //canvasProgram->setLED(x, y, Colour(0, 0, 0));
+                        //canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
                         break;
                 }
             }
         }
+        //引っ張り軌道
+        for (int y = 0; y < BLOCKS_SIZE; y++){
+            for (int x = 0; x < BLOCKS_SIZE; x++){
+                
+            }
+        }
+        
     }
 }
 

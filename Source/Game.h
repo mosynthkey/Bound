@@ -11,6 +11,7 @@
 #include "MidiOutManager.h"
 
 #define BLOCKS_SIZE 15
+#define LEDDECAY 0.7 // 減衰速度の乗数
 
 #define NAMESPACE_GAME_BEGIN namespace game {
 #define NAMESPACE_GAME_END   }
