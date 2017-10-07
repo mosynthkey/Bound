@@ -72,6 +72,8 @@ MainComponent::MainComponent()
     setSize (600, 600);
     
     board = new Board();
+    board2 = new Board();
+    
     /*
     //Track1. BD color rgb(255, 255, 255)
     {
@@ -163,6 +165,9 @@ MainComponent::~MainComponent()
     if (activeBlock != nullptr)
         detachActiveBlock();
     
+    if (anotherBlock != nullptr)
+        detachAnotherBlock();
+    
     lightpadComponent.removeListener (this);
 }
 
@@ -212,12 +217,16 @@ void MainComponent::resized()
 
 void MainComponent::topologyChanged()
 {
+    stopTimer();
     lightpadComponent.setVisible (false);
     infoLabel.setVisible (true);
     
     // Reset the activeBlock object
     if (activeBlock != nullptr)
         detachActiveBlock();
+    
+    if (anotherBlock != nullptr)
+        detachAnotherBlock();
     
     // Get the array of currently connected Block objects from the PhysicalTopologySource
     auto blocks = topologySource.getCurrentTopology().blocks;
@@ -226,9 +235,10 @@ void MainComponent::topologyChanged()
     for (auto b : blocks)
     {
         // Find the first Lightpad
-        if (b->getType() == Block::Type::lightPadBlock)
+        if (activeBlock == nullptr && b->getType() == Block::Type::lightPadBlock)
         {
             activeBlock = b;
+            
             
             // Register MainContentComponent as a listener to the touch surface
             if (auto surface = activeBlock->getTouchSurface())
@@ -251,10 +261,42 @@ void MainComponent::topologyChanged()
             // Make the on screen Lighpad component visible
             lightpadComponent.setVisible (true);
             infoLabel.setVisible (false);
+        }
+        else if (activeBlock != nullptr && anotherBlock == nullptr && b->getType() == Block::Type::lightPadBlock)
+        {
+            anotherBlock = b;
+            /*
+            if (auto surface = anotherBlock->getTouchSurface())
+                surface->addListener (this);
+            */
+            // Register MainContentComponent as a listener to any buttons
+            for (auto button : anotherBlock->getButtons())
+                button->addListener (this);
             
+            if (auto grid = anotherBlock->getLEDGrid())
+            {
+                // Work out scale factors to translate X and Y touches to LED indexes
+                scaleX = (float) (grid->getNumColumns() - 1) / anotherBlock->getWidth();
+                scaleY = (float) (grid->getNumRows() - 1)    / anotherBlock->getHeight();
+                
+                setLEDProgram (*anotherBlock);
+            }
+            
+            // 下につなぐ(決め打ち)
+            board->connect(board2, Direction_Bottom);
+            board2->connect(board, Direction_Top);
+            board2->deleteAllBalls();
             break;
         }
     }
+    
+    if (anotherBlock == nullptr)
+    {
+        board->disConnect(Direction_Bottom);
+        board2->disConnect(Direction_Top);
+    }
+    
+    startTimer(100);
 }
 
 
@@ -419,6 +461,7 @@ void MainComponent::timerCallback()
 {
     redrawLEDs();
     board->move();
+    board2->move();
 }
 
 void MainComponent::ledClicked (int x, int y, float z)
@@ -436,23 +479,21 @@ void MainComponent::detachActiveBlock()
     activeBlock = nullptr;
 }
 
+void MainComponent::detachAnotherBlock()
+{
+    if (auto surface = anotherBlock->getTouchSurface())
+        surface->removeListener (this);
+    
+    anotherBlock = nullptr;
+}
+
 void MainComponent::setLEDProgram (Block& block)
 {
-    if (currentMode == canvas)
-    {
-        block.setProgram (new BitmapLEDProgram (block));
-        
-        // Redraw any previously drawn LEDs
-        redrawLEDs();
-    }
-    else if (currentMode == colourPalette)
-    {
-        block.setProgram (new DrumPadGridProgram (block));
-        
-        // Setup the grid layout
-        if (auto* program = getPaletteProgram())
-            program->setGridFills (layout.numColumns, layout.numRows, layout.gridFillArray);
-    }
+    
+    block.setProgram (new BitmapLEDProgram (block));
+    
+    // Redraw any previously drawn LEDs
+    redrawLEDs();
 }
 
 void MainComponent::clearLEDs()
@@ -476,63 +517,7 @@ void MainComponent::clearLEDs()
 
 void MainComponent::drawLED (uint32 x0, uint32 y0, float z, Colour drawColour)
 {
-    /*
-    if (auto* canvasProgram = getCanvasProgram())
-    {
-        // Check if the activeLeds array already contains an ActiveLED object for this LED
-        auto index = getLEDAt (x0, y0);
-        
-        // If the colour is black then just set the LED to black and return
-        if (drawColour == Colours::black)
-        {
-            if (index >= 0)
-            {
-                canvasProgram->setLED (x0, y0, Colours::black);
-                lightpadComponent.setLEDColour (x0, y0, Colours::black);
-                activeLeds.remove (index);
-            }
-            
-            return;
-        }
-        
-        // If there is no ActiveLED obejct for this LED then create one,
-        // add it to the array, set the LED on the Block and return
-        if (index < 0)
-        {
-            ActiveLED led;
-            led.x = x0;
-            led.y = y0;
-            led.colour = drawColour;
-            led.brightness = z;
-            
-            activeLeds.add (led);
-            canvasProgram->setLED (led.x, led.y, led.colour.withBrightness (led.brightness));
-            
-            lightpadComponent.setLEDColour (led.x, led.y, led.colour.withBrightness (led.brightness));
-            
-            return;
-        }
-        
-        // Get the ActiveLED object for this LED
-        auto currentLed = activeLeds.getReference (index);
-        
-        // If the LED colour is the same as the draw colour, add the brightnesses together.
-        // If it is different, blend the colours
-        if (currentLed.colour == drawColour)
-            currentLed.brightness = jmin (currentLed.brightness + z, 1.0f);
-        else
-            currentLed.colour = currentLed.colour.interpolatedWith (drawColour, z);
-        
-        
-        // Set the LED on the Block and change the ActiveLED object in the activeLeds array
-        if (canvasProgram != nullptr)
-            canvasProgram->setLED (currentLed.x, currentLed.y, currentLed.colour.withBrightness (currentLed.brightness));
-        
-        lightpadComponent.setLEDColour (currentLed.x, currentLed.y, currentLed.colour.withBrightness (currentLed.brightness));
-        
-        activeLeds.set (index, currentLed);
-    }
-     */
+
 }
 
 void MainComponent::redrawLEDs(){

@@ -71,18 +71,19 @@ public:
     
     int addBall(Ball &ball); // ボールを置く。idを返す。
     void deleteBall(int id);
+    void deleteAllBalls(void);
     
     void move(); // タイマーとか呼び出す。ゲームを進める。
     
     void connect(Board *b, Direction d);
     void disConnect(Direction d);
     
-    bool isWall(unsigned int x, unsigned int y)
+    bool isWall(float x, float y)
     {
-        if ((x <= 0 && connectedBoard[Direction_Left] == nullptr) ||
-            (x >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Right] == nullptr) ||
-            (y <= 0 && connectedBoard[Direction_Top] == nullptr) ||
-            (y >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Bottom] == nullptr))
+        if ((x < 0 && connectedBoard[Direction_Left] == nullptr) ||
+            (x > BLOCKS_SIZE - 1 && connectedBoard[Direction_Right] == nullptr) ||
+            (y < 0 && connectedBoard[Direction_Top] == nullptr) ||
+            (y > BLOCKS_SIZE - 1 && connectedBoard[Direction_Bottom] == nullptr))
         {
             return true;
         }
@@ -90,12 +91,12 @@ public:
         return false;
     }
     
-    bool isWarpZone(unsigned int x, unsigned int y)
+    bool isWarpZone(float x, float y)
     {
-        if ((x <= 0 && connectedBoard[Direction_Left] != nullptr) ||
-            (x >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Right] != nullptr) ||
-            (y <= 0 && connectedBoard[Direction_Top] != nullptr) ||
-            (y >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Bottom] != nullptr))
+        if ((x < 0 && connectedBoard[Direction_Left] != nullptr) ||
+            (x > BLOCKS_SIZE - 1 && connectedBoard[Direction_Right] != nullptr) ||
+            (y < 0 && connectedBoard[Direction_Top] != nullptr) ||
+            (y > BLOCKS_SIZE - 1 && connectedBoard[Direction_Bottom] != nullptr))
         {
             return true;
         }
@@ -128,11 +129,12 @@ public:
         result.c = Charactor_Nothing;
         return result;
     }
+    
         int lastId;
 private:
     Board *connectedBoard[Direction_Num];
     std::vector<Ball> ballList;
-
+    std::vector<Ball> warpBallList;
     MidiOutManager *outManager;
     
     std::vector<int> sequence;
