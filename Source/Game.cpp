@@ -9,11 +9,16 @@
 
 using namespace game;
 
-int Board::addBall(Ball &ball)
+int Board::addBall(Ball &b)
 {
-    ball.id = lastId++;
-    ballList.push_back(ball);
-    return ball.id;
+ //   ball.id = lastId++;
+    if (b.px < 0) b.px = 0;
+    if (b.px > BLOCKS_SIZE - 1) b.px = BLOCKS_SIZE - 1;
+    if (b.py < 0) b.py = 0;
+    if (b.py > BLOCKS_SIZE - 1) b.py = BLOCKS_SIZE - 1;
+    
+    ballList.push_back(b);
+    return b.id;
 }
 
 void Board::deleteBall(int id)
@@ -28,8 +33,15 @@ void Board::deleteBall(int id)
     }
 }
 
+void Board::deleteAllBalls()
+{
+    ballList.clear();
+}
+
 void Board::move()
 {
+    warpBallList.clear();
+    
     for (int i = 0; i < ballList.size(); i++)
     {
         auto &b = ballList[i];
@@ -64,15 +76,60 @@ void Board::move()
         
         b.px += b.vx;
         b.py += b.vy;
+        
+        if (isWarpZone(b.px, b.py))
+        {
+            warpBallList.push_back(b);
+        }
+    }
+    
+    for (int i = 0; i < warpBallList.size(); i++)
+    {
+        auto &b = warpBallList[i];
+        deleteBall(b.id);
+        
+        if (b.px < 0)
+        {
+            b.px += BLOCKS_SIZE;
+            if (connectedBoard[Direction_Left] != nullptr)
+            {
+                connectedBoard[Direction_Left]->addBall(b);
+            }
+        }
+        else if (b.px >= BLOCKS_SIZE - 1)
+        {
+            b.px -= BLOCKS_SIZE;
+            if (connectedBoard[Direction_Right] != nullptr)
+            {
+                connectedBoard[Direction_Right]->addBall(b);
+            }
+        }
+        else if (b.py < 0)
+        {
+            b.py += BLOCKS_SIZE;
+            if (connectedBoard[Direction_Top] != nullptr)
+            {
+                connectedBoard[Direction_Top]->addBall(b);
+            }
+        }
+        else if (b.py >= BLOCKS_SIZE - 1)
+        {
+            b.py -= BLOCKS_SIZE;
+            if (connectedBoard[Direction_Bottom] != nullptr)
+            {
+                connectedBoard[Direction_Bottom]->addBall(b);
+            }
+        }
     }
 }
 
+
 void Board::connect(Board *b, Direction d)
 {
-    // 未実装
+    connectedBoard[d] = b;
 }
 
 void Board::disConnect(Direction d)
 {
-    // 未実装
+    connectedBoard[d] = nullptr;
 }

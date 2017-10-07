@@ -163,6 +163,7 @@ private:
     
     /** Removes TouchSurface and ControlButton listeners and sets activeBlock to nullptr */
     void detachActiveBlock();
+    void detachAnotherBlock();
     
     /** Sets the LEDGrid Program for the selected mode */
     void setLEDProgram (Block&);
@@ -180,6 +181,14 @@ private:
     {
         if (activeBlock != nullptr)
             return dynamic_cast<BitmapLEDProgram*> (activeBlock->getProgram());
+        
+        return nullptr;
+    }
+    
+    BitmapLEDProgram* getAnotherCanvasProgram()
+    {
+        if (anotherBlock != nullptr)
+            return dynamic_cast<BitmapLEDProgram*> (anotherBlock->getProgram());
         
         return nullptr;
     }
@@ -232,6 +241,7 @@ private:
     ColourGrid layout { 3, 3 };
     PhysicalTopologySource topologySource;
     Block::Ptr activeBlock;
+    Block::Ptr anotherBlock;
     
     float scaleX = 0.0;
     float scaleY = 0.0;
@@ -249,12 +259,13 @@ private:
 #endif
     
     game::Board *board;
+    game::Board *board2;
     unsigned int lastX = 0, lastY = 0;
     bool isTap = false;
     int oldX = 0;
     int oldY = 0;
     int mode = 0;
-    game::BoardState stateLED[BLOCKS_SIZE][BLOCKS_SIZE];
+    game::BoardState stateLED[2][BLOCKS_SIZE][BLOCKS_SIZE];
     bool pressed = false;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
