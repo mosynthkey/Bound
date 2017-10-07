@@ -29,6 +29,17 @@
 
 using namespace game;
 
+struct MidiDeviceListEntry : ReferenceCountedObject
+{
+    MidiDeviceListEntry (const String& deviceName) : name (deviceName) {}
+    
+    String name;
+    ScopedPointer<MidiInput> inDevice;
+    ScopedPointer<MidiOutput> outDevice;
+    
+    typedef ReferenceCountedObjectPtr<MidiDeviceListEntry> Ptr;
+};
+
 MainComponent::MainComponent()
 {
     activeLeds.clear();
@@ -79,6 +90,7 @@ MainComponent::MainComponent()
         ball.vy = 0.5f;
         ball.r = 255.f;
         ball.g = ball.b = 0.f;
+        ball.noteNum = 0;
         board->addBall(ball);
     }
     
@@ -90,10 +102,38 @@ MainComponent::MainComponent()
         ball.vy = -2.f;
         ball.b = 255.f;
         ball.r = ball.g = 0.f;
+        ball.noteNum = 1;
         board->addBall(ball);
     }
     
-    startTimer(500);
+    {
+        Ball ball;
+        ball.px = 2.f;
+        ball.py = 2.f;
+        ball.vx = 1.f;
+        ball.vy = 1.f;
+        ball.b = 255.f;
+        ball.r = ball.g = 0.f;
+        ball.noteNum = 2;
+        board->addBall(ball);
+    }
+    
+    {
+        Ball ball;
+        ball.px = 7.f;
+        ball.py = 4.f;
+        ball.vx = 2.f;
+        ball.vy = -1.f;
+        ball.b = 255.f;
+        ball.r = ball.g = 0.f;
+        ball.noteNum = 5;
+        board->addBall(ball);
+    }
+    
+    startTimer(100);
+    
+    // midi
+    MidiOutManager::getSharedInstance();
 }
 
 MainComponent::~MainComponent()

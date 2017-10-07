@@ -29,6 +29,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "LightpadComponent.h"
 #include "Game.h"
+#include "MidiOutManager.h"
 
 //==============================================================================
 /**
