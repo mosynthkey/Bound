@@ -71,7 +71,7 @@ MainComponent::MainComponent()
     setSize (600, 600);
     
     board = new Board();
-    
+    /*
     {
         Ball ball;
         ball.px = 5.f;
@@ -119,7 +119,7 @@ MainComponent::MainComponent()
         ball.noteNum = 5;
         board->addBall(ball);
     }
-    
+    */
     startTimer(100);
     
     // midi
@@ -277,6 +277,7 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
                 ball.r = 255;
                 ball.g = 255;
                 ball.b = 255;
+                ball.noteNum = board->lastId % 10;
                 board->addBall(ball);
                 isTap = false;
                 std::cout << "measured(" << x << ", " << y << ", " << oldX << ", " << oldY << ")" << std::endl;
@@ -328,21 +329,15 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
 void MainComponent::buttonReleased (ControlButton&, Block::Timestamp)
 {
     std::cout << "buttonReleased" << std::endl;
+    setNextMode();
 }
 
 void MainComponent::buttonClicked (Button* b)
 {
-    std::cout << "buttonClicked" << std::endl;
 }
 
 void MainComponent::sliderValueChanged (Slider* s)
 {
-    /*
-    if (s == &brightnessSlider)
-        brightnessLED.setColour (layout.currentColour
-                                 .withBrightness (layout.currentColour == Colours::black ? 0.0f
-                                                  : static_cast<float> (brightnessSlider.getValue())));
-     */
 }
 
 void MainComponent::timerCallback()
@@ -353,11 +348,6 @@ void MainComponent::timerCallback()
 
 void MainComponent::ledClicked (int x, int y, float z)
 {
-    /*
-    drawLED ((uint32) x, (uint32) y,
-             z == 0.0f ? static_cast<float> (brightnessSlider.getValue())
-             : z * static_cast<float> (brightnessSlider.getValue()), layout.currentColour);
-     */
 }
 
 void MainComponent::detachActiveBlock()

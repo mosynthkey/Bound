@@ -133,6 +133,16 @@ public:
     /** Overridden from TopologySource::Listener. Called when the topology changes */
     void topologyChanged() override;
     
+    int getMode()
+    {
+        return mode;
+    }
+    
+    void setNextMode()
+    {
+        mode = (mode + 1) % 7;
+    }
+    
 private:
     /** Overridden from TouchSurface::Listener. Called when a Touch is received on the Lightpad */
     void touchChanged (TouchSurface&, const TouchSurface::Touch&) override;
@@ -243,6 +253,7 @@ private:
     bool isTap = false;
     int oldX = 0;
     int oldY = 0;
+    int mode = 0;
     game::BoardState stateLED[BLOCKS_SIZE][BLOCKS_SIZE];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

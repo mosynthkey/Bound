@@ -60,7 +60,10 @@ public:
         }
             
         lastId = 0;
+        seq_i = 0;
         outManager = &MidiOutManager::getSharedInstance();
+        
+        sequence = {40, 42, 44, 46, 48, 50, 52, 50, 48, 46, 44, 42};
     }
     
     ~Board();
@@ -124,12 +127,15 @@ public:
         result.c = Charactor_Nothing;
         return result;
     }
-    
+        int lastId;
 private:
     Board *connectedBoard[Direction_Num];
     std::vector<Ball> ballList;
-    int lastId;
+
     MidiOutManager *outManager;
+    
+    std::vector<int> sequence;
+    int seq_i;
 };
 
 NAMESPACE_GAME_END
