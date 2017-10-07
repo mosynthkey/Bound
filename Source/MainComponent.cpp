@@ -27,6 +27,7 @@
 #include "MainComponent.h"
 #include "Game.h"
 #include "stdio.h"
+#include "math.h"
 
 using namespace game;
 
@@ -234,6 +235,7 @@ void MainComponent::topologyChanged()
     }
 }
 
+/*
 //==============================================================================
 void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touch)
 {
@@ -251,20 +253,7 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
     // if( lastX != x && lastY != y )
     {
-        /*
-        if (!board->isWall(x, y))
-        {
-            Ball ball;
-            ball.px = x;
-            ball.py = y;
-            ball.vx = z * 6;
-            ball.vy = -z * 6;
-            ball.r = (1 - z) * 255;
-            ball.g = abs(0.5 - z) * 255;
-            ball.b = z * 255;
-            board->addBall(ball);
-        }
-     */
+
         
         if( isTap && z == 0 ){
             if( oldX != x && oldY != y )
@@ -277,10 +266,102 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
                 ball.r = 255;
                 ball.g = 255;
                 ball.b = 255;
+                
                 board->addBall(ball);
                 isTap = false;
-                std::cout << "measured(" << x << ", " << y << ", " << oldX << ", " << oldY << ")" << std::endl;
-                std::cout << "out(" << oldX-x << ", "<< oldY-y << ")" << std::endl;
+                //std::cout << "measured(" << x << ", " << y << ", " << oldX << ", " << oldY << ")" << std::endl;
+                //std::cout << "out(" << oldX-x << ", "<< oldY-y << ")" << std::endl;
+                
+            }
+            else
+            {
+                std::cout << "oshikondadake" << std::endl;
+            }
+        }
+        
+        if( z != 0 && !isTap ){
+            isTap = true;
+            oldX = x;
+            oldY = y;
+            printf("measure\n");
+            std::cout << "measured(" << x << ", " << y << ", " << z << ")" << std::endl;
+        }
+        lastX = x;
+        lastY = y;
+    }
+    
+    //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
+ 
+}
+*/
+
+void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touch)
+{
+    auto x = roundToInt(touch.x * scaleX);
+    auto y = roundToInt(touch.y * scaleY);
+    auto z = touch.z;
+    
+    if( z <= 0.4 ){
+        z = 0;
+    }
+    else{
+        z = 1;
+    }
+    
+    //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
+    // if( lastX != x && lastY != y )
+    {
+        /*
+         if (!board->isWall(x, y))
+         {
+         Ball ball;
+         ball.px = x;
+         ball.py = y;
+         ball.vx = z * 6;
+         ball.vy = -z * 6;
+         ball.r = (1 - z) * 255;
+         ball.g = abs(0.5 - z) * 255;
+         ball.b = z * 255;
+         board->addBall(ball);
+         }
+         */
+        
+        if( isTap && z == 0 ){
+            if( oldX != x && oldY != y )
+            {
+                Ball ball;
+                ball.px = x;
+                ball.py = y;
+                //ball.vx = (float)(oldX - x) / 2.f;
+                //ball.vy = (float)(oldY - y) / 2.f;
+                ball.r = 255;
+                ball.g = 255;
+                ball.b = 255;
+                
+                rad = sqrt( pow(x, 2) + pow(y, 2) );
+                if( (float)abs(y)/abs(x) < tan(M_PI/4) || (float)abs(y)/abs(x) > tan(3*M_PI/4) ){
+                    ball.vx = (float)( rad / sqrt(2) /2 ) / 2.f;
+                    ball.vy = (float)( rad / sqrt(2) /2 ) / 2.f;
+                    printf("45\n");
+                    std::cout << "measured(" << rad << "," << rad / sqrt(2) << ", " << rad / sqrt(2) << ")" << std::endl;
+                }
+                else if( x < y ){
+                    ball.vx = rad / 2.f;
+                    ball.vy = 1;
+                    printf("tate\n");
+                }
+                else{
+                    ball.vx = rad / 2.f;
+                    ball.vy = 1;
+                    printf("yoko\n");
+                }
+                
+                
+                board->addBall(ball);
+                isTap = false;
+                //std::cout << "measured(" << x << ", " << y << ", " << oldX << ", " << oldY << ")" << std::endl;
+                //std::cout << "out(" << oldX-x << ", "<< oldY-y << ")" << std::endl;
+                
             }
             else
             {
@@ -301,29 +382,30 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     
     //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
     /*
-    // Translate X and Y touch events to LED indexes
-    auto xLed = roundToInt (touch.x * scaleX);
-    auto yLed = roundToInt (touch.y * scaleY);
-    
-    if (currentMode == colourPalette)
-    {
-        if (layout.setActiveColourForTouch (xLed, yLed))
-        {
-            if (auto* colourPaletteProgram = getPaletteProgram())
-            {
-                colourPaletteProgram->setGridFills (layout.numColumns, layout.numRows, layout.gridFillArray);
-                brightnessLED.setColour (layout.currentColour
-                                         .withBrightness (layout.currentColour == Colours::black ? 0.0f
-                                                          : static_cast<float> (brightnessSlider.getValue())));
-            }
-        }
-    }
-    else if (currentMode == canvas)
-    {
-        drawLED ((uint32) xLed, (uint32) yLed, touch.z, layout.currentColour);
-    }
+     // Translate X and Y touch events to LED indexes
+     auto xLed = roundToInt (touch.x * scaleX);
+     auto yLed = roundToInt (touch.y * scaleY);
+     
+     if (currentMode == colourPalette)
+     {
+     if (layout.setActiveColourForTouch (xLed, yLed))
+     {
+     if (auto* colourPaletteProgram = getPaletteProgram())
+     {
+     colourPaletteProgram->setGridFills (layout.numColumns, layout.numRows, layout.gridFillArray);
+     brightnessLED.setColour (layout.currentColour
+     .withBrightness (layout.currentColour == Colours::black ? 0.0f
+     : static_cast<float> (brightnessSlider.getValue())));
+     }
+     }
+     }
+     else if (currentMode == canvas)
+     {
+     drawLED ((uint32) xLed, (uint32) yLed, touch.z, layout.currentColour);
+     }
      */
 }
+
 
 void MainComponent::buttonReleased (ControlButton&, Block::Timestamp)
 {

@@ -243,6 +243,7 @@ private:
     bool isTap = false;
     int oldX = 0;
     int oldY = 0;
+    double rad = 0;
     game::BoardState stateLED[BLOCKS_SIZE][BLOCKS_SIZE];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
