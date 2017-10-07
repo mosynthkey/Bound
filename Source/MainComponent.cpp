@@ -235,7 +235,7 @@ void MainComponent::topologyChanged()
     }
 }
 
-/*
+
 //==============================================================================
 void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touch)
 {
@@ -293,8 +293,9 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
  
 }
-*/
 
+
+/*
 void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touch)
 {
     auto x = roundToInt(touch.x * scaleX);
@@ -311,20 +312,7 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
     // if( lastX != x && lastY != y )
     {
-        /*
-         if (!board->isWall(x, y))
-         {
-         Ball ball;
-         ball.px = x;
-         ball.py = y;
-         ball.vx = z * 6;
-         ball.vy = -z * 6;
-         ball.r = (1 - z) * 255;
-         ball.g = abs(0.5 - z) * 255;
-         ball.b = z * 255;
-         board->addBall(ball);
-         }
-         */
+
         
         if( isTap && z == 0 ){
             if( oldX != x && oldY != y )
@@ -381,30 +369,9 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     }
     
     //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
-    /*
-     // Translate X and Y touch events to LED indexes
-     auto xLed = roundToInt (touch.x * scaleX);
-     auto yLed = roundToInt (touch.y * scaleY);
-     
-     if (currentMode == colourPalette)
-     {
-     if (layout.setActiveColourForTouch (xLed, yLed))
-     {
-     if (auto* colourPaletteProgram = getPaletteProgram())
-     {
-     colourPaletteProgram->setGridFills (layout.numColumns, layout.numRows, layout.gridFillArray);
-     brightnessLED.setColour (layout.currentColour
-     .withBrightness (layout.currentColour == Colours::black ? 0.0f
-     : static_cast<float> (brightnessSlider.getValue())));
-     }
-     }
-     }
-     else if (currentMode == canvas)
-     {
-     drawLED ((uint32) xLed, (uint32) yLed, touch.z, layout.currentColour);
-     }
-     */
+    
 }
+ */
 
 void MainComponent::buttonPressed (ControlButton&, Block::Timestamp)
 {
