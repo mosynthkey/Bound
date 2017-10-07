@@ -326,9 +326,15 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
      */
 }
 
+void MainComponent::buttonPressed (ControlButton&, Block::Timestamp)
+{
+    pressed = true;
+}
+
 void MainComponent::buttonReleased (ControlButton&, Block::Timestamp)
 {
     std::cout << "buttonReleased" << std::endl;
+    pressed = false;
     setNextMode();
 }
 

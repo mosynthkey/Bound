@@ -148,7 +148,7 @@ private:
     void touchChanged (TouchSurface&, const TouchSurface::Touch&) override;
     
     /** Overridden from ControlButton::Listener. Called when a button on the Lightpad is pressed */
-    void buttonPressed (ControlButton&, Block::Timestamp) override { }
+    void buttonPressed (ControlButton&, Block::Timestamp) override;
     
     /** Overridden from ControlButton::Listener. Called when a button on the Lightpad is released */
     void buttonReleased (ControlButton&, Block::Timestamp) override;
@@ -255,6 +255,7 @@ private:
     int oldY = 0;
     int mode = 0;
     game::BoardState stateLED[BLOCKS_SIZE][BLOCKS_SIZE];
+    bool pressed = false;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
