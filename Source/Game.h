@@ -8,6 +8,7 @@
 #pragma once
 
 #include <vector>
+#include "MidiOutManager.h"
 
 #define BLOCKS_SIZE 15
 
@@ -22,6 +23,7 @@ struct Ball
     float r, g, b;
     int lifespan; // 何ターンで消えるのか(-1で無限)
     int id;
+    int noteNum; // volca sampleに繋いだときはchとして使う
 };
 
 enum Direction
@@ -58,6 +60,7 @@ public:
         }
             
         lastId = 0;
+        outManager = &MidiOutManager::getSharedInstance();
     }
     
     ~Board();
@@ -76,6 +79,19 @@ public:
             (x >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Right] == nullptr) ||
             (y <= 0 && connectedBoard[Direction_Top] == nullptr) ||
             (y >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Bottom] == nullptr))
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    bool isWarpZone(unsigned int x, unsigned int y)
+    {
+        if ((x <= 0 && connectedBoard[Direction_Left] != nullptr) ||
+            (x >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Right] != nullptr) ||
+            (y <= 0 && connectedBoard[Direction_Top] != nullptr) ||
+            (y >= BLOCKS_SIZE - 1 && connectedBoard[Direction_Bottom] != nullptr))
         {
             return true;
         }
@@ -113,6 +129,7 @@ private:
     Board *connectedBoard[Direction_Num];
     std::vector<Ball> ballList;
     int lastId;
+    MidiOutManager *outManager;
 };
 
 NAMESPACE_GAME_END

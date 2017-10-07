@@ -80,6 +80,7 @@ MainComponent::MainComponent()
         ball.vy = 0.5f;
         ball.r = 255.f;
         ball.g = ball.b = 0.f;
+        ball.noteNum = 0;
         board->addBall(ball);
     }
     
@@ -91,10 +92,47 @@ MainComponent::MainComponent()
         ball.vy = -2.f;
         ball.b = 255.f;
         ball.r = ball.g = 0.f;
+        ball.noteNum = 1;
         board->addBall(ball);
     }
     
-    startTimer(500);
+    {
+        Ball ball;
+        ball.px = 2.f;
+        ball.py = 2.f;
+        ball.vx = 1.f;
+        ball.vy = 1.f;
+        ball.b = 255.f;
+        ball.r = ball.g = 0.f;
+        ball.noteNum = 2;
+        board->addBall(ball);
+    }
+    
+    {
+        Ball ball;
+        ball.px = 7.f;
+        ball.py = 4.f;
+        ball.vx = 2.f;
+        ball.vy = -1.f;
+        ball.b = 255.f;
+        ball.r = ball.g = 0.f;
+        ball.noteNum = 5;
+        board->addBall(ball);
+    }
+    
+    startTimer(100);
+    
+    // midi
+    MidiOutManager::getSharedInstance();
+    startTimer(80);
+    
+    for(int x=0; x<BLOCKS_SIZE ; x++){
+        for(int y=0; y<BLOCKS_SIZE ; y++){
+            stateLED[x][y].r = 0;
+            stateLED[x][y].g = 0;
+            stateLED[x][y].b = 0;
+        }
+    }
 }
 
 MainComponent::~MainComponent()
@@ -219,8 +257,8 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
             Ball ball;
             ball.px = x;
             ball.py = y;
-            ball.vx = z * 3;
-            ball.vy = -z * 3;
+            ball.vx = z * 6;
+            ball.vy = -z * 6;
             ball.r = (1 - z) * 255;
             ball.g = abs(0.5 - z) * 255;
             ball.b = z * 255;
@@ -431,35 +469,45 @@ void MainComponent::drawLED (uint32 x0, uint32 y0, float z, Colour drawColour)
      */
 }
 
-void MainComponent::redrawLEDs()
-{
-    if (auto* canvasProgram = getCanvasProgram())
-    {
-        for (int y = 0; y < 15; y++)
-        {
-            for (int x = 0; x < 15; x++)
-            {
-                canvasProgram->setLED(x, y, Colour(155, 40, 200));
+void MainComponent::redrawLEDs(){
+    if (auto* canvasProgram = getCanvasProgram()){
+        for (int y = 0; y < 15; y++){
+            for (int x = 0; x < 15; x++){
+                //canvasProgram->setLED(x, y, Colour(155/3, 40/3, 200/3));
             }
-        }
+         }
+        
         
         for (int y = 0; y < BLOCKS_SIZE; y++)
         {
             for (int x = 0; x < BLOCKS_SIZE; x++)
             {
                 BoardState state = board->getBoardState(x, y);
+                //LEDを減衰
+                stateLED[x][y].r = stateLED[x][y].r/2 ;
+                stateLED[x][y].g = stateLED[x][y].g/2 ;
+                stateLED[x][y].b = stateLED[x][y].b/2 ;
                 switch (state.c)
                 {
                     case Charactor_Wall:
-                        canvasProgram->setLED(x, y, Colour(255, 255, 255));
+                        canvasProgram->setLED(x, y, Colour(255/4, 255/4, 255/4));
                         break;
                         
                     case Charactor_Ball:
-                        canvasProgram->setLED(x, y, Colour(state.r, state.g, state.b));
-                        break;
+                        stateLED[x][y].r = state.r;
+                        stateLED[x][y].g = state.g;
+                        stateLED[x][y].b = state.b;
+                        canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
+                        /*canvasProgram->setLED(x, y, Colour(state.r, state.g, state.b));
+                        canvasProgram->setLED(x-1, y, Colour(state.r/4, state.g/4, state.b/4));
+                        canvasProgram->setLED(x+1, y, Colour(state.r/4, state.g/4, state.b/4));
+                        canvasProgram->setLED(x, y-1, Colour(state.r/4, state.g/4, state.b/4));
+                        canvasProgram->setLED(x, y+1, Colour(state.r/4, state.g/4, state.b/4));
+                        */break;
                         
                     default:
-                        canvasProgram->setLED(x, y, Colour(0, 0, 0));
+                        canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
+                        //canvasProgram->setLED(x, y, Colour(0, 0, 0));
                         break;
                 }
             }

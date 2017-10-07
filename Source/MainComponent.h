@@ -29,6 +29,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "LightpadComponent.h"
 #include "Game.h"
+#include "MidiOutManager.h"
 
 //==============================================================================
 /**
@@ -242,6 +243,7 @@ private:
     bool isTap = false;
     int oldX = 0;
     int oldY = 0;
+    game::BoardState stateLED[BLOCKS_SIZE][BLOCKS_SIZE];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
