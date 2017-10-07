@@ -239,6 +239,9 @@ private:
     
     game::Board *board;
     unsigned int lastX = 0, lastY = 0;
+    bool isTap = false;
+    int oldX = 0;
+    int oldY = 0;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

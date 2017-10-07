@@ -26,6 +26,7 @@
 
 #include "MainComponent.h"
 #include "Game.h"
+#include "stdio.h"
 
 using namespace game;
 
@@ -202,7 +203,16 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     auto y = roundToInt(touch.y * scaleY);
     auto z = touch.z;
     
-    if (lastX != x && lastY != y)
+    if( z <= 0.2 ){
+        z = 0;
+    }
+    else{
+        z = 1;
+    }
+    
+    /*
+    //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
+    // if( lastX != x && lastY != y )
     {
         if (!board->isWall(x, y))
         {
@@ -216,12 +226,41 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
             ball.b = z * 255;
             board->addBall(ball);
         }
+     */
         
+        if( isTap && z == 0 ){
+            if( oldX != x && oldY != y )
+            {
+                Ball ball;
+                ball.px = x;
+                ball.py = y;
+                ball.vx = oldX - x;
+                ball.vy = oldY - y;
+                ball.r = 255;
+                ball.g = 255;
+                ball.b = 255;
+                board->addBall(ball);
+                isTap = false;
+                printf("ball out\n");
+            }
+            else
+            {
+                std::cout << "oshikondadake" << std::endl;
+            }
+        }
+        
+        if( z != 0 && !isTap ){
+            isTap = true;
+            oldX = x;
+            oldY = y;
+            printf("measure\n");
+            std::cout << "measured(" << x << ", " << y << ", " << z << ")" << std::endl;
+        }
         lastX = x;
         lastY = y;
     }
     
-    std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
+    //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
     /*
     // Translate X and Y touch events to LED indexes
     auto xLed = roundToInt (touch.x * scaleX);
