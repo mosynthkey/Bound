@@ -240,6 +240,7 @@ private:
     
     game::Board *board;
     unsigned int lastX = 0, lastY = 0;
+    game::BoardState stateLED[BLOCKS_SIZE][BLOCKS_SIZE];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
