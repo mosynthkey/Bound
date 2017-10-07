@@ -241,17 +241,17 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
     auto y = roundToInt(touch.y * scaleY);
     auto z = touch.z;
     
-    if( z <= 0.2 ){
+    if( z <= 0.4 ){
         z = 0;
     }
     else{
         z = 1;
     }
     
-    /*
     //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
     // if( lastX != x && lastY != y )
     {
+        /*
         if (!board->isWall(x, y))
         {
             Ball ball;
@@ -272,14 +272,15 @@ void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touc
                 Ball ball;
                 ball.px = x;
                 ball.py = y;
-                ball.vx = oldX - x;
-                ball.vy = oldY - y;
+                ball.vx = (float)(oldX - x) / 2.f;
+                ball.vy = (float)(oldY - y) / 2.f;
                 ball.r = 255;
                 ball.g = 255;
                 ball.b = 255;
                 board->addBall(ball);
                 isTap = false;
-                printf("ball out\n");
+                std::cout << "measured(" << x << ", " << y << ", " << oldX << ", " << oldY << ")" << std::endl;
+                std::cout << "out(" << oldX-x << ", "<< oldY-y << ")" << std::endl;
             }
             else
             {
