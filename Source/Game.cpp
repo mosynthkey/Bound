@@ -36,13 +36,30 @@ void Board::move()
         if (isWall(b.px + b.vx, b.py) || isWall(b.px - b.vx, b.py))
         {
             b.vx = -b.vx;
-            outManager->playSound(b.noteNum);
+            if (i == 4)
+            {
+                outManager->playMonologueSound(sequence[seq_i++], 1);
+                seq_i = seq_i % sequence.size();
+            }
+            else
+            {
+                outManager->playVolcaSound(b.noteNum);
+            }
         }
         
         if (isWall(b.px, b.py + b.vy) || isWall(b.px, b.py - b.vy))
         {
             b.vy = -b.vy;
-            outManager->playSound(b.noteNum);
+            //outManager->playVolcaSound(b.noteNum);
+            if (i == 4)
+            {
+                outManager->playMonologueSound(sequence[seq_i++], 1);
+                seq_i = seq_i % sequence.size();
+            }
+            else
+            {
+                outManager->playVolcaSound(b.noteNum);
+            }
         }
         
         b.px += b.vx;
