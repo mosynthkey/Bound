@@ -28,6 +28,9 @@
 #include "Game.h"
 #include "stdio.h"
 
+#define LEDDECAY 0.1
+#define KABEYOKO 0.7
+
 using namespace game;
 
 MainComponent::MainComponent()
@@ -72,67 +75,22 @@ MainComponent::MainComponent()
     
     board = new Board();
     board2 = new Board();
+    board2->lastId = 1000;
     
-    {
-        Ball ball;
-        ball.px = 5.f;
-        ball.py = 6.f;
-        ball.vx = 1.0f;
-        ball.vy = 0.5f;
-        ball.r = 255.f;
-        ball.g = ball.b = 0.f;
-        ball.noteNum = 0;
-        board->addBall(ball);
-    }
-    
-    {
-        Ball ball;
-        ball.px = 3.f;
-        ball.py = 8.f;
-        ball.vx = 1.f;
-        ball.vy = -2.f;
-        ball.b = 255.f;
-        ball.r = ball.g = 0.f;
-        ball.noteNum = 1;
-        board->addBall(ball);
-    }
-    
-    {
-        Ball ball;
-        ball.px = 2.f;
-        ball.py = 2.f;
-        ball.vx = 1.f;
-        ball.vy = 1.f;
-        ball.b = 255.f;
-        ball.r = ball.g = 0.f;
-        ball.noteNum = 2;
-        board->addBall(ball);
-    }
-    
-    {
-        Ball ball;
-        ball.px = 7.f;
-        ball.py = 4.f;
-        ball.vx = 2.f;
-        ball.vy = -1.f;
-        ball.b = 255.f;
-        ball.r = ball.g = 0.f;
-        ball.noteNum = 5;
-        board->addBall(ball);
-    }
-    */
     startTimer(100);
     
     // midi
     MidiOutManager::getSharedInstance();
     startTimer(80);
-    
+    for (int b_i = 0; b_i < 2; b_i++)
+    {
     for(int x=0; x<BLOCKS_SIZE ; x++){
         for(int y=0; y<BLOCKS_SIZE ; y++){
-            stateLED[x][y].r = 0;
-            stateLED[x][y].g = 0;
-            stateLED[x][y].b = 0;
+            stateLED[b_i][x][y].r = 0;
+            stateLED[b_i][x][y].g = 0;
+            stateLED[b_i][x][y].b = 0;
         }
+    }
     }
 }
 
@@ -277,94 +235,158 @@ void MainComponent::topologyChanged()
 
 //==============================================================================
 void MainComponent::touchChanged (TouchSurface&, const TouchSurface::Touch& touch)
+
 {
-    auto x = roundToInt(touch.x * scaleX);
-    auto y = roundToInt(touch.y * scaleY);
-    auto z = touch.z;
+    double x = roundToInt(touch.x * scaleX);
+    double y = roundToInt(touch.y * scaleY);
+    double z = touch.z;
     
-    if( z <= 0.4 ){
+    int i, j;
+    
+    //0:free 1:fixed
+    
+    int radMode = 0;
+
+    //感度調整
+    if( z <= 0.2 ) {
         z = 0;
-    }
-    else{
+    }else{
         z = 1;
     }
     
-    //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
-    // if( lastX != x && lastY != y )
-    {
-        /*
-        if (!board->isWall(x, y))
-        {
+    //Get Ball Color
+    BallChn = getMode();
+    switch( BallChn ){
+        case 0:
+            Red = 255;
+            Green = 255;
+            Blue = 255;
+            break;
+        case 1:
+            Red = 243;
+            Green = 156;
+            Blue = 18;
+            break;
+        case 2:
+            Red = 52;
+            Green = 152;
+            Blue = 219;
+            break;
+        case 3:
+            Red = 46;
+            Green = 204;
+            Blue = 113;
+            break;
+        case 4:
+            Red = 155;
+            Green = 89;
+            Blue = 182;
+            break;
+        default:
+            Red = 255;
+            Green = 255;
+            Blue = 255;
+            break;
+    }
+    
+    ////////rad free
+    if( isTap && z == 0 && radMode == 0){
+        if( oldX != x && oldY != y ){
             Ball ball;
             ball.px = x;
             ball.py = y;
-            ball.vx = z * 6;
-            ball.vy = -z * 6;
-            ball.r = (1 - z) * 255;
-            ball.g = abs(0.5 - z) * 255;
-            ball.b = z * 255;
+            ball.vx = (float)(oldX - x) / 4.f;
+            ball.vy = (float)(oldY - y) / 4.f;
+            
+            ball.r = Red;
+            ball.g = Green;
+            ball.b = Blue;
+            ball.noteNum = BallChn;
+            ball.id = getLastId();
             board->addBall(ball);
+            
+            isTap = false;
         }
-     */
-        
-        if( isTap && z == 0 ){
-            if( oldX != x && oldY != y )
-            {
-                Ball ball;
-                ball.px = x;
-                ball.py = y;
-                ball.vx = (float)(oldX - x) / 2.f;
-                ball.vy = (float)(oldY - y) / 2.f;
-                ball.r = 255;
-                ball.g = 255;
-                ball.b = 255;
-                ball.noteNum = board->lastId % 10;
-                board->addBall(ball);
-                isTap = false;
-                std::cout << "measured(" << x << ", " << y << ", " << oldX << ", " << oldY << ")" << std::endl;
-                std::cout << "out(" << oldX-x << ", "<< oldY-y << ")" << std::endl;
-            }
-            else
-            {
-                std::cout << "oshikondadake" << std::endl;
-            }
-        }
-        
-        if( z != 0 && !isTap ){
-            isTap = true;
-            oldX = x;
-            oldY = y;
-            printf("measure\n");
-            std::cout << "measured(" << x << ", " << y << ", " << z << ")" << std::endl;
-        }
-        lastX = x;
-        lastY = y;
-    }
-    
-    //std::cout << "touched(" << x << ", " << y << ", " << z << ")" << std::endl;
-    /*
-    // Translate X and Y touch events to LED indexes
-    auto xLed = roundToInt (touch.x * scaleX);
-    auto yLed = roundToInt (touch.y * scaleY);
-    
-    if (currentMode == colourPalette)
-    {
-        if (layout.setActiveColourForTouch (xLed, yLed))
+        else
         {
-            if (auto* colourPaletteProgram = getPaletteProgram())
-            {
-                colourPaletteProgram->setGridFills (layout.numColumns, layout.numRows, layout.gridFillArray);
-                brightnessLED.setColour (layout.currentColour
-                                         .withBrightness (layout.currentColour == Colours::black ? 0.0f
-                                                          : static_cast<float> (brightnessSlider.getValue())));
+            std::cout << "oshikondadake" << std::endl;
+        }
+        
+        ////////rad fixed
+    } else if( isTap && z == 0 && radMode == 1){
+        Ball ball;
+        ball.px = x;
+        ball.py = y;
+        power = sqrt( pow(x,2) + pow(y,2) ) / 6.f;
+        
+        //power = 3;
+        rad = atan2( oldX - x, oldY - y );
+        printf("rad = %lf\n", rad/M_PI);
+        
+        for(i = -1; i < 2; i = i+2){
+            for(j = 1; j <= 4; j = j*2 ){
+                printf("%d\n", j*i);
+                
+                if( i * rad < (M_PI / (i*j)) + (M_PI/8) &&  i * rad >= (M_PI / (i*j)) - (M_PI/8) ){
+                    
+                    //if( rad/M_PI < i*j + 1/8 && rad/M_PI >= i*j - 1/8 ){
+                    
+                    ball.vx =  (float)(  power * sin( M_PI/(i*j) ) ) ;
+                    
+                    ball.vy =  (float)(  power * cos( M_PI/(i*j) ) ) ;
+                    
+                    printf("%d\n", j);
+                    
+                }
+                
+            }
+            
+        }
+        
+        ball.r = Red;
+        ball.g = Green;
+        ball.b = Blue;
+        ball.noteNum = BallChn;
+        ball.id = getLastId();
+        
+        board->addBall(ball);
+        
+        
+        isTap = false;
+        
+    }
+    
+    
+    
+    if( z != 0 && !isTap ){
+        isTap = true;
+        oldX = x;
+        oldY = y;
+        
+    }else{
+        int b_i = 0;
+        {
+            for(i = 0; i < 2; i++ ){
+                
+                for(j = 0; j < 2; j++ ){
+                    
+                    stateLED[b_i][(int)x+i][(int)y+j].r = Red;
+                    
+                    stateLED[b_i][(int)x+i][(int)y+j].g = Green;
+                    
+                    stateLED[b_i][(int)x+i][(int)y+j].b = Blue;
+                    
+                }
+                
             }
         }
+        
     }
-    else if (currentMode == canvas)
-    {
-        drawLED ((uint32) xLed, (uint32) yLed, touch.z, layout.currentColour);
-    }
-     */
+    
+    lastX = x;
+    
+    lastY = y;
+    
 }
 
 void MainComponent::buttonPressed (ControlButton&, Block::Timestamp)
@@ -451,48 +473,128 @@ void MainComponent::drawLED (uint32 x0, uint32 y0, float z, Colour drawColour)
 }
 
 void MainComponent::redrawLEDs(){
-    if (auto* canvasProgram = getCanvasProgram()){
-        for (int y = 0; y < 15; y++){
-            for (int x = 0; x < 15; x++){
-                //canvasProgram->setLED(x, y, Colour(155/3, 40/3, 200/3));
-            }
-         }
-        
-        
-        for (int y = 0; y < BLOCKS_SIZE; y++)
+    BitmapLEDProgram* canvasProgram;
+    for (int b_i = 0; b_i < 2; b_i++)
+    {
+        if (b_i == 0)
         {
-            for (int x = 0; x < BLOCKS_SIZE; x++)
-            {
-                BoardState state = board->getBoardState(x, y);
-                //LEDを減衰
-                stateLED[x][y].r = stateLED[x][y].r/2 ;
-                stateLED[x][y].g = stateLED[x][y].g/2 ;
-                stateLED[x][y].b = stateLED[x][y].b/2 ;
-                switch (state.c)
-                {
-                    case Charactor_Wall:
-                        canvasProgram->setLED(x, y, Colour(255/4, 255/4, 255/4));
-                        break;
-                        
-                    case Charactor_Ball:
-                        stateLED[x][y].r = state.r;
-                        stateLED[x][y].g = state.g;
-                        stateLED[x][y].b = state.b;
-                        canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
-                        /*canvasProgram->setLED(x, y, Colour(state.r, state.g, state.b));
-                        canvasProgram->setLED(x-1, y, Colour(state.r/4, state.g/4, state.b/4));
-                        canvasProgram->setLED(x+1, y, Colour(state.r/4, state.g/4, state.b/4));
-                        canvasProgram->setLED(x, y-1, Colour(state.r/4, state.g/4, state.b/4));
-                        canvasProgram->setLED(x, y+1, Colour(state.r/4, state.g/4, state.b/4));
-                        */break;
-                        
-                    default:
-                        canvasProgram->setLED(x, y, Colour(stateLED[x][y].r, stateLED[x][y].g, stateLED[x][y].b));
-                        //canvasProgram->setLED(x, y, Colour(0, 0, 0));
-                        break;
+            canvasProgram = getCanvasProgram();
+        }
+        else
+        {
+            canvasProgram = getAnotherCanvasProgram();
+            
+        }
+        
+        if (canvasProgram){
+            for (int y = 0; y < BLOCKS_SIZE; y++){
+                for (int x = 0; x < BLOCKS_SIZE; x++){
+                    //ボール等描画前にキャンバスの下地をリセット
+                    canvasProgram->setLED(x, y, Colour(stateLED[b_i][x][y].r, stateLED[b_i][x][y].g, stateLED[b_i][x][y].b));
+                    //前回までに描画されていた画面を減衰
+                    stateLED[b_i][x][y].r = stateLED[b_i][x][y].r * LEDDECAY ;
+                    stateLED[b_i][x][y].g = stateLED[b_i][x][y].g * LEDDECAY ;
+                    stateLED[b_i][x][y].b = stateLED[b_i][x][y].b * LEDDECAY ;
+                }
+            }
+            for (int y = 0; y < BLOCKS_SIZE; y++){
+                for (int x = 0; x < BLOCKS_SIZE; x++){
+                    //壁を塗る
+                    if (pressed == TRUE)
+                    {
+                        int r, g, b;
+                        switch( getMode() + 1 % 5){
+                            case 0:
+                                r = 255;
+                                g = 255;
+                                b = 255;
+                                break;
+                            case 1:
+                                r = 243;
+                                g = 156;
+                                b = 18;
+                                break;
+                            case 2:
+                                r = 52;
+                                g = 152;
+                                b = 219;
+                                break;
+                            case 3:
+                                r = 46;
+                                g = 204;
+                                b = 113;
+                                break;
+                            case 4:
+                                r = 155;
+                                g = 89;
+                                b = 182;
+                                break;
+                        }
+                        if( ((x == 0)||(x == BLOCKS_SIZE -1)) || ((y == 0)||(y == BLOCKS_SIZE -1)) ){
+                            canvasProgram->setLED(x, y, Colour(r, g, b));
+                        }
+                    }
+                    
+                    BoardState state;
+                    if (b_i == 0)
+                    {
+                        state = board->getBoardState(x, y);
+                    }
+                    else
+                    {
+                        state = board2->getBoardState(x, y);
+                    }
+                    
+                    switch (state.c)
+                    {
+                        case Charactor_Wall:
+                            break;
+                            
+                        case Charactor_Ball:
+                        {
+                            //本家
+                            stateLED[b_i][x][y].r = state.r;//stateLED[x][y].r + state.r;
+                            stateLED[b_i][x][y].g = state.g;//stateLED[x][y].g + state.g;
+                            stateLED[b_i][x][y].b = state.b;//stateLED[x][y].b + state.b;
+                            
+                            //壁塗りチンパンコード
+                            for(int a = -1; a<2; a++){
+                                if (0 <= y+a && y+a <= BLOCKS_SIZE - 1)
+                                {
+                                    if(x <= 1){
+                                        stateLED[b_i][0][y+a].r = state.r * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][0][y+a].g = state.g * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][0][y+a].b = state.b * (1-KABEYOKO * abs(a));
+                                    }
+                                    else if(x >= BLOCKS_SIZE - 1){
+                                        stateLED[b_i][BLOCKS_SIZE - 1][y+a].r = state.r * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][BLOCKS_SIZE - 1][y+a].g = state.g * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][BLOCKS_SIZE - 1][y+a].b = state.b * (1-KABEYOKO * abs(a));
+                                    }
+                                }
+                                if (0 <= x+a && x+a <= BLOCKS_SIZE - 1)
+                                {
+                                    if(y <= 1){
+                                        stateLED[b_i][x+a][0].r = state.r * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][x+a][0].g = state.g * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][x+a][0].b = state.b * (1-KABEYOKO * abs(a));
+                                    }
+                                    else if(y >= BLOCKS_SIZE - 1){
+                                        stateLED[b_i][x+a][BLOCKS_SIZE - 1].r = state.r * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][x+a][BLOCKS_SIZE - 1].g = state.g * (1-KABEYOKO * abs(a));
+                                        stateLED[b_i][x+a][BLOCKS_SIZE - 1].b = state.b * (1-KABEYOKO * abs(a));
+                                    }
+                                }
+                            }
+
+                            canvasProgram->setLED(x, y, Colour(stateLED[b_i][x][y].r, stateLED[b_i][x][y].g, stateLED[b_i][x][y].b));
+                            break;
+                        }
+                        default:
+                            break;
+                    }
                 }
             }
         }
     }
 }
-

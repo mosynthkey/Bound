@@ -140,7 +140,13 @@ public:
     
     void setNextMode()
     {
-        mode = (mode + 1) % 7;
+        mode = (mode + 1) % 5;
+    }
+    
+    int getLastId()
+    {
+        lastId++;
+        return lastId;
     }
     
 private:
@@ -267,6 +273,10 @@ private:
     int mode = 0;
     game::BoardState stateLED[2][BLOCKS_SIZE][BLOCKS_SIZE];
     bool pressed = false;
+    int BallChn, Red, Green, Blue;
+    double power=0;
+    double rad = 0;
+    int lastId = 0;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

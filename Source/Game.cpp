@@ -11,18 +11,18 @@ using namespace game;
 
 int Board::addBall(Ball &b)
 {
- //   ball.id = lastId++;
+    std::cout << "ball " << b.id << " added" << std::endl;
     if (b.px < 0) b.px = 0;
     if (b.px > BLOCKS_SIZE - 1) b.px = BLOCKS_SIZE - 1;
     if (b.py < 0) b.py = 0;
     if (b.py > BLOCKS_SIZE - 1) b.py = BLOCKS_SIZE - 1;
-    
     ballList.push_back(b);
     return b.id;
 }
 
 void Board::deleteBall(int id)
 {
+    std::cout << "ball " << id << " deleted" << std::endl;
     for (int i = 0; i < ballList.size(); i++)
     {
         if (ballList[i].id == id)
@@ -45,7 +45,7 @@ void Board::move()
     for (int i = 0; i < ballList.size(); i++)
     {
         auto &b = ballList[i];
-        if (isWall(b.px + b.vx, b.py) || isWall(b.px - b.vx, b.py))
+        if (isWall(b.px + b.vx, b.py))
         {
             b.vx = -b.vx;
             if (i == 4)
@@ -59,10 +59,9 @@ void Board::move()
             }
         }
         
-        if (isWall(b.px, b.py + b.vy) || isWall(b.px, b.py - b.vy))
+        if (isWall(b.px, b.py + b.vy))
         {
             b.vy = -b.vy;
-            //outManager->playVolcaSound(b.noteNum);
             if (i == 4)
             {
                 outManager->playMonologueSound(sequence[seq_i++], 1);
@@ -85,8 +84,8 @@ void Board::move()
     
     for (int i = 0; i < warpBallList.size(); i++)
     {
+        
         auto &b = warpBallList[i];
-        deleteBall(b.id);
         
         if (b.px < 0)
         {
@@ -94,9 +93,10 @@ void Board::move()
             if (connectedBoard[Direction_Left] != nullptr)
             {
                 connectedBoard[Direction_Left]->addBall(b);
+                
             }
         }
-        else if (b.px >= BLOCKS_SIZE - 1)
+        else if (b.px >= BLOCKS_SIZE)
         {
             b.px -= BLOCKS_SIZE;
             if (connectedBoard[Direction_Right] != nullptr)
@@ -112,7 +112,7 @@ void Board::move()
                 connectedBoard[Direction_Top]->addBall(b);
             }
         }
-        else if (b.py >= BLOCKS_SIZE - 1)
+        else if (b.py >= BLOCKS_SIZE)
         {
             b.py -= BLOCKS_SIZE;
             if (connectedBoard[Direction_Bottom] != nullptr)
@@ -120,6 +120,16 @@ void Board::move()
                 connectedBoard[Direction_Bottom]->addBall(b);
             }
         }
+        else
+        {
+            std::cout << "WAKARANAI" << std::endl;
+        }
+    }
+    
+    for (int i = 0; i < warpBallList.size(); i++)
+    {
+        auto &b = warpBallList[i];
+        deleteBall(b.id);
     }
 }
 

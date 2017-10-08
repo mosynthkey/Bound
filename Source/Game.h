@@ -63,7 +63,12 @@ public:
         seq_i = 0;
         outManager = &MidiOutManager::getSharedInstance();
         
-        sequence = {40, 42, 44, 46, 48, 50, 52, 50, 48, 46, 44, 42};
+        sequence = {
+            0x2d, 0x39, 0x3a,
+            0x2d, 0x37, 0x39,
+            0x2d, 0x35, 0x37,
+            0x2d, 0x34, 0x35,
+            0x34, 0x32, 0x30, 0x2f};
     }
     
     ~Board();
